@@ -248,6 +248,7 @@ func getID() string {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Fatal(err)
+
 	}
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9,en-GB;q=0.8,en;q=0.7")
@@ -348,6 +349,9 @@ func pause() {
 
 func main() {
 	fmt.Println("Automatic temperature registration by Haynes v1.3")
+	t := time.Now() //当前时间
+	timeLayoutStr := "2006-01-02 15:04:05"
+	u_time := t.Format(timeLayoutStr)
 	id := getID()
 	client := &http.Client{}
 	//	var data = strings.NewReader(getformdata())
@@ -356,6 +360,7 @@ func main() {
 	req, err := http.NewRequest("POST", url, data)
 	if err != nil {
 		log.Fatal(err)
+		send_email("出现了一些问题..... "+u_time, err.Error())
 	}
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9,en-GB;q=0. 8,en;q=0.7")
@@ -369,17 +374,20 @@ func main() {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
+		send_email("出现了一些问题.....  "+u_time, err.Error())
 	}
 	defer resp.Body.Close()
 	bodyText, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
+		send_email("出现了一些问题.....  "+u_time, err.Error())
 	}
 	//fmt.Printf("%s\n", bodyText)
 	var xujc xujc_response
 	err = json.Unmarshal(bodyText, &xujc) //反序列化
 	if err != nil {
 		log.Fatal(err)
+		send_email("出现了一些问题.....  "+u_time, err.Error())
 	}
 	//fmt.Printf("%#v\n", dictResponse)
 
@@ -403,9 +411,6 @@ func main() {
 		fmt.Println("!_! 表单数据改变了,快来看看")
 		send_email("!_! 表单数据改变了,快来看看", mbody)
 	}
-	t := time.Now() //当前时间
-	timeLayoutStr := "2006-01-02 15:04:05"
-	u_time := t.Format(timeLayoutStr)
 	fmt.Println("Status:", st)
 	fmt.Println("isChange:", isch)
 	fmt.Println("Time:", u_time)
