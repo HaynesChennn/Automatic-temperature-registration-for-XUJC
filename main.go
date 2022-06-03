@@ -248,6 +248,7 @@ func getID() string {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		log.Fatal(err)
+
 	}
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9,en-GB;q=0.8,en;q=0.7")
@@ -348,6 +349,9 @@ func pause() {
 
 func main() {
 	fmt.Println("Automatic temperature registration by Haynes v1.3")
+	t := time.Now() //当前时间
+	timeLayoutStr := "2006-01-02 15:04:05"
+	u_time := t.Format(timeLayoutStr)
 	id := getID()
 	client := &http.Client{}
 	//formdata := `{"formData":[{"name":"label_1582537738348","title":"文本","value":{},"hide":false,"readonly":true},{"name":"input_1582537793424","title":"学号","value":{"stringValue":"ROB21026"},"hide":false,"readonly":true},{"name":"input_1582537796856","title":"姓名","value":{"stringValue":"陈鸿壹"},"hide":false,"readonly":true},{"name":"input_1582537799026","title":"学院","value":{"stringValue":"信息科学与技术学院"},"hide":false,"readonly":true},{"name":"select_1582639884820","title":"性别","value":{"stringValue":"男"},"hide":false,"readonly":true},{"name":"input_1582639887112","title":"年级","value":{"stringValue":"2021"},"hide":false,"readonly":true},{"name":"input_1582639888256","title":"班级","value":{"stringValue":"计算机21(3)"},"hide":false,"readonly":true},{"name":"input_1582639889478","title":"辅导员","value":{"stringValue":"高新琪"},"hide":false,"readonly":true},{"name":"select_1631714040062","title":"完成情况","value":{"stringValue":"已打卡"},"hide":false,"readonly":false},{"name":"label_1582538217569","title":"文本","value":{},"hide":false,"readonly":true},{"name":"select_1582538214785","title":"当前所在的地理位置","value":{"stringValue":"校内"},"hide":false,"readonly":false},{"name":"input_1582538157713","title":"当前所在国家","value":{"stringValue":""},"hide":true,"readonly":false},{"name":"address_1582538163410","title":"当前所在的省市区","value":{"addressValue":{"province":"福建省","city":"漳州市","area":"龙海市","fullValue":"福建省漳州市龙海市"}},"hide":false,"readonly":false},{"name":"select_1648711313366","title":"目前是否居住在招商局漳州开发区","value":{"stringValue":"是"},"hide":false,"readonly":false},{"name":"label_1582537910151","title":"文本","value":{},"hide":false,"readonly":true},{"name":"select_1631790340241","title":"今日体温","value":{"stringValue":"37.3以下"},"hide":false,"readonly":false},{"name":"select_1640686551031","title":"是否已接种疫苗","value":{"stringValue":"已接种3针"},"hide":false,"readonly":false},{"name":"datetime_1640686554409","title":"最后一针疫苗接种日期","value":{"dateValue":"2022-02-27 00:00:00"},"hide":false,"readonly":false},{"name":"label_1644481853234","title":"文本","value":{},"hide":false,"readonly":true},{"name":"select_1641522783266","title":"今日是否有中高风险【所在城市】旅居史","value":{"stringValue":"否"},"hide":false,"readonly":false},{"name":"label_1641522839410","title":"中高风险地区查询","value":{},"hide":false,"readonly":true},{"name":"select_1641522890815","title":"今日是否有中高风险地区旅居史","value":{"stringValue":null},"hide":true,"readonly":false},{"name":"input_1641522901563","title":"中高风险地区旅居史详细地址","value":{"stringValue":null},"hide":true,"readonly":false},{"name":"select_1641523063583","title":"今日个人疫情管控情况","value":{"stringValue":"无"},"hide":false,"readonly":false},{"name":"select_1641523103608","title":"今日是否有境外旅居史","value":{"stringValue":"无"},"hide":false,"readonly":false},{"name":"select_1588863625331","title":"今日本人及共同居住人员是否与中高风险地区或境外回国人员接触？","value":{"stringValue":"否"},"hide":false,"readonly":false},{"name":"select_1582538846920","title":"今日是否出现发热、咳嗽、胸闷、呼吸困难等症状？","value":{"stringValue":"否"},"hide":false,"readonly":false},{"name":"select_1582538869774","title":"是否就诊或住院","value":{"stringValue":""},"hide":true,"readonly":false},{"name":"table_1588863652072","title":"与中高风险地区或境外回国人员接触情况登记（需点击左下角“+新增”）","value":{"tableValue":[]},"hide":true,"readonly":false},{"name":"label_1582538416593","title":"文本","value":{},"hide":false,"readonly":true},{"name":"input_1582538924486","title":"备注","value":{"stringValue":null},"hide":false,"readonly":false},{"name":"select_1582538939790","title":"本人是否承诺以上所填报的全部内容均属实、准确，不存在任何隐瞒和不实的情况，更无遗漏之处。","value":{"stringValue":"是"},"hide":false,"readonly":false}],"playerId":"owner"}`
@@ -357,6 +361,7 @@ func main() {
 	req, err := http.NewRequest("POST", url, data)
 	if err != nil {
 		log.Fatal(err)
+		send_email("出现了一些问题..... "+u_time, err.Error())
 	}
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9,en-GB;q=0. 8,en;q=0.7")
@@ -370,17 +375,20 @@ func main() {
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
+		send_email("出现了一些问题.....  "+u_time, err.Error())
 	}
 	defer resp.Body.Close()
 	bodyText, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
+		send_email("出现了一些问题.....  "+u_time, err.Error())
 	}
 	//fmt.Printf("%s\n", bodyText)
 	var xujc xujc_response
 	err = json.Unmarshal(bodyText, &xujc) //反序列化
 	if err != nil {
 		log.Fatal(err)
+		send_email("出现了一些问题.....  "+u_time, err.Error())
 	}
 	//fmt.Printf("%#v\n", dictResponse)
 
@@ -404,9 +412,6 @@ func main() {
 		fmt.Println("!_! 表单数据改变了,快来看看")
 		send_email("!_! 表单数据改变了,快来看看", mbody)
 	}
-	t := time.Now() //当前时间
-	timeLayoutStr := "2006-01-02 15:04:05"
-	u_time := t.Format(timeLayoutStr)
 	fmt.Println("Status:", st)
 	fmt.Println("isChange:", isch)
 	fmt.Println("Time:", u_time)
