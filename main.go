@@ -17,7 +17,7 @@ import (
 //var cookie = "_dx_uzZo5y=a389b56dee2bbc800696affa8164893f72a5651fc24098911bbaf3f2bd5ac83fc2f6370f; Hm_lvt_d4b4fe5895335a64dc71a1e3d97ecaae=1650788542,1650966832,1651718592; SAAS_S_ID=jgxy; JSESSIONID=93A8F358CC96D982F91AEE0B173324F5; _dx_app_5c7bafe274b534f13ec3b614135a362e=627a69fcopGU37T5P1TYiyGssFahg9ISpJaGmtL1; _dx_captcha_vid=0D84355393FB38CCB0E29E0771352C0AEA4F7D37B0B1AEDF8E848B01DBFEA1F615AF05286A5DD11B52A65E1DA4D628AAAE729001ABD62ABA2B21B6EADD17B3826036ADAD99C617C968DDB3C3FAC9D847; SAAS_U=1455cd5698302b35041285c57a960dfc995be15fd444a2a77d85911fa04055a9"
 var User_Agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36"
 
-var u_name, u_no string
+var u_name, u_no, u_time string
 
 type Xujc struct {
 	Data struct {
@@ -210,6 +210,7 @@ func getbussinessID() string {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "http://ijg.xujc.com/api/app/229/business/now?getFirst=true", nil)
 	if err != nil {
+		send_email("GetbussinessID出现了一些问题.....  "+u_time, err.Error())
 		log.Fatal(err)
 	}
 	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
@@ -222,11 +223,13 @@ func getbussinessID() string {
 	req.Header.Set("User-Agent", User_Agent)
 	resp, err := client.Do(req)
 	if err != nil {
+		send_email("GetbussinessID出现了一些问题.....  "+u_time, err.Error())
 		log.Fatal(err)
 	}
 	defer resp.Body.Close()
 	bodyText, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		send_email("GetbussinessID出现了一些问题.....  "+u_time, err.Error())
 		log.Fatal(err)
 	}
 	//fmt.Printf("%s\n", resp.StatusCode)
@@ -234,6 +237,7 @@ func getbussinessID() string {
 	var getb bid
 	err = json.Unmarshal(bodyText, &getb) //反序列化
 	if err != nil {
+		send_email("GetbussinessID出现了一些问题.....  "+u_time, err.Error())
 		log.Fatal(err)
 	}
 	bid := getb.Data[0].Business.ID
@@ -247,8 +251,8 @@ func getID() string {
 	url := "http://ijg.xujc.com/api/formEngine/business/" + getbussinessID() + "/myFormInstance"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
+		send_email("GetID出现了一些问题.....  "+u_time, err.Error())
 		log.Fatal(err)
-
 	}
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9,en-GB;q=0.8,en;q=0.7")
@@ -262,17 +266,20 @@ func getID() string {
 	req.Header.Set("X-Requested-With", "XMLHttpRequest")
 	resp, err := client.Do(req)
 	if err != nil {
+		send_email("GetID出现了一些问题.....  "+u_time, err.Error())
 		log.Fatal(err)
 	}
 	defer resp.Body.Close()
 	bodyText, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		send_email("GetID出现了一些问题.....  "+u_time, err.Error())
 		log.Fatal(err)
 	}
 	//fmt.Printf("%s\n", bodyText)
 	var get Xujc
 	err = json.Unmarshal(bodyText, &get) //反序列化
 	if err != nil {
+		send_email("GetID出现了一些问题.....  "+u_time, err.Error())
 		log.Fatal(err)
 	}
 	fmt.Println("No:", get.Data.Owner.UserNo)
@@ -348,10 +355,10 @@ func pause() {
 }
 
 func main() {
-	fmt.Println("Automatic temperature registration by Haynes v1.3")
+	fmt.Println("Automatic temperature registration by Haynes v1.3.1")
 	t := time.Now() //当前时间
 	timeLayoutStr := "2006-01-02 15:04:05"
-	u_time := t.Format(timeLayoutStr)
+	u_time = t.Format(timeLayoutStr)
 	id := getID()
 	client := &http.Client{}
 	//	var data = strings.NewReader(getformdata())
@@ -359,8 +366,8 @@ func main() {
 	//println("url:", url)
 	req, err := http.NewRequest("POST", url, data)
 	if err != nil {
+		send_email("Post出现了一些问题..... "+u_time, err.Error())
 		log.Fatal(err)
-		send_email("出现了一些问题..... "+u_time, err.Error())
 	}
 	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9,en-GB;q=0. 8,en;q=0.7")
@@ -373,21 +380,21 @@ func main() {
 	req.Header.Set("X-Requested-With", "XMLHttpRequest")
 	resp, err := client.Do(req)
 	if err != nil {
+		send_email("Post出现了一些问题.....  "+u_time, err.Error())
 		log.Fatal(err)
-		send_email("出现了一些问题.....  "+u_time, err.Error())
 	}
 	defer resp.Body.Close()
 	bodyText, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		send_email("Post出现了一些问题.....  "+u_time, err.Error())
 		log.Fatal(err)
-		send_email("出现了一些问题.....  "+u_time, err.Error())
 	}
 	//fmt.Printf("%s\n", bodyText)
 	var xujc xujc_response
 	err = json.Unmarshal(bodyText, &xujc) //反序列化
 	if err != nil {
+		send_email("Post出现了一些问题.....  "+u_time, err.Error())
 		log.Fatal(err)
-		send_email("出现了一些问题.....  "+u_time, err.Error())
 	}
 	//fmt.Printf("%#v\n", dictResponse)
 
