@@ -208,7 +208,7 @@ func getformdata() string {
 
 func getbussinessID() string {
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "http://ijg.xujc.com/api/app/229/business/now?getFirst=true", nil)
+	req, err := http.NewRequest("GET", "https://webvpn.xmu.edu.cn/http/77726476706e69737468656265737421f9fd46d23f256253300b86a1/api/app/229/business/now?getFirst=true", nil)
 	if err != nil {
 		send_email("GetbussinessID出现了一些问题.....  "+u_time, err.Error())
 		log.Fatal(err)
@@ -248,7 +248,7 @@ func getbussinessID() string {
 func getID() string {
 	client := &http.Client{}
 	fmt.Println("businessID:", getbussinessID())
-	url := "http://ijg.xujc.com/api/formEngine/business/" + getbussinessID() + "/myFormInstance"
+	url := "https://webvpn.xmu.edu.cn/http/77726476706e69737468656265737421f9fd46d23f256253300b86a1/api/formEngine/business/" + getbussinessID() + "/myFormInstance"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		send_email("GetID出现了一些问题.....  "+u_time, err.Error())
@@ -261,7 +261,7 @@ func getID() string {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Cookie", getCookie())
 	req.Header.Set("If-None-Match", `W/"4138-V3qtR8Z1sFVcaru9at8wciTNIFM"`)
-	req.Header.Set("Referer", "http://ijg.xujc.com/app/229")
+	req.Header.Set("Referer", "https://webvpn.xmu.edu.cn/http/77726476706e69737468656265737421f9fd46d23f256253300b86a1/app/229")
 	req.Header.Set("User-Agent", User_Agent)
 	req.Header.Set("X-Requested-With", "XMLHttpRequest")
 	resp, err := client.Do(req)
@@ -291,7 +291,7 @@ func getID() string {
 
 func isChange() bool {
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "http://ijg.xujc.com/api/formEngine/business/1574/table/fields?playerId=owner", nil)
+	req, err := http.NewRequest("GET", "https://webvpn.xmu.edu.cn/http/77726476706e69737468656265737421f9fd46d23f256253300b86a1/api/formEngine/business/1574/table/fields?playerId=owner", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -302,7 +302,7 @@ func isChange() bool {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Cookie", getCookie())
 	req.Header.Set("Pragma", "no-cache")
-	req.Header.Set("Referer", "http://ijg.xujc.com/app/229")
+	req.Header.Set("Referer", "https://webvpn.xmu.edu.cn/http/77726476706e69737468656265737421f9fd46d23f256253300b86a1/app/229")
 	req.Header.Set("User-Agent", User_Agent)
 	req.Header.Set("X-Requested-With", "XMLHttpRequest")
 	resp, err := client.Do(req)
@@ -362,8 +362,10 @@ func main() {
 	id := getID()
 	client := &http.Client{}
 	//	var data = strings.NewReader(getformdata())
-	url := "http://ijg.xujc.com/api/formEngine/formInstance/" + id
-	//println("url:", url)
+	url := "https://webvpn.xmu.edu.cn/http/77726476706e69737468656265737421f9fd46d23f256253300b86a1/api/formEngine/formInstance/" + id + "?vpn-12-o1-ijg.xujc.com"
+	//https://webvpn.xmu.edu.cn/http/77726476706e69737468656265737421f9fd46d23f256253300b86a1/api/formEngine/formInstance/629a9f8ed4b01b00063a1af1?vpn-12-o1-ijg.xujc.com
+	//https://webvpn.xmu.edu.cn/http/77726476706e69737468656265737421f9fd46d23f256253300b86a1/api/formEngine/formInstance/629b8102d4b01b00063a676f?vpn-12-o1-ijg.xujc.com
+	println("url:", url)
 	req, err := http.NewRequest("POST", url, data)
 	if err != nil {
 		send_email("Post出现了一些问题..... "+u_time, err.Error())
@@ -374,10 +376,18 @@ func main() {
 	req.Header.Set("Connection", "keep-alive")
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Cookie", getCookie())
-	req.Header.Set("Origin", "http://ijg.xujc.com")
-	req.Header.Set("Referer", "http://ijg.xujc.com/app/229")
 	req.Header.Set("User-Agent", User_Agent)
 	req.Header.Set("X-Requested-With", "XMLHttpRequest")
+	req.Header.Set("Origin", "https://webvpn.xmu.edu.cn")
+	req.Header.Set("Pragma", "no-cache")
+	req.Header.Set("Referer", "https://webvpn.xmu.edu.cn/http/77726476706e69737468656265737421f9fd46d23f256253300b86a1/app/229")
+	req.Header.Set("Sec-Fetch-Dest", "empty")
+	req.Header.Set("Sec-Fetch-Mode", "cors")
+	req.Header.Set("Sec-Fetch-Site", "same-origin")
+	req.Header.Set("X-Requested-With", "XMLHttpRequest")
+	req.Header.Set("sec-ch-ua", `" Not A;Brand";v="99", "Chromium";v="102", "Google Chrome";v="102"`)
+	req.Header.Set("sec-ch-ua-mobile", "?0")
+	req.Header.Set("sec-ch-ua-platform", `"Windows"`)
 	resp, err := client.Do(req)
 	if err != nil {
 		send_email("Post出现了一些问题.....  "+u_time, err.Error())
