@@ -14,8 +14,8 @@ import (
 	"time"
 )
 
-//var cookie = "_dx_uzZo5y=a389b56dee2bbc800696affa8164893f72a5651fc24098911bbaf3f2bd5ac83fc2f6370f; Hm_lvt_d4b4fe5895335a64dc71a1e3d97ecaae=1650788542,1650966832,1651718592; SAAS_S_ID=jgxy; JSESSIONID=93A8F358CC96D982F91AEE0B173324F5; _dx_app_5c7bafe274b534f13ec3b614135a362e=627a69fcopGU37T5P1TYiyGssFahg9ISpJaGmtL1; _dx_captcha_vid=0D84355393FB38CCB0E29E0771352C0AEA4F7D37B0B1AEDF8E848B01DBFEA1F615AF05286A5DD11B52A65E1DA4D628AAAE729001ABD62ABA2B21B6EADD17B3826036ADAD99C617C968DDB3C3FAC9D847; SAAS_U=1455cd5698302b35041285c57a960dfc995be15fd444a2a77d85911fa04055a9"
 var User_Agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36"
+var cookie string
 
 var u_name, u_no, u_time string
 
@@ -208,28 +208,36 @@ func getformdata() string {
 
 func getbussinessID() string {
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://webvpn.xmu.edu.cn/http/77726476706e69737468656265737421f9fd46d23f256253300b86a1/api/app/229/business/now?getFirst=true", nil)
+	req, err := http.NewRequest("GET", "https://webvpn.xmu.edu.cn/http/77726476706e69737468656265737421f9fd46d23f256253300b86a1/api/app/229/business/now?vpn-12-o1-ijg.xujc.com&getFirst=true", nil)
 	if err != nil {
-		send_email("GetbussinessID出现了一些问题.....  "+u_time, err.Error())
+		send_email("1GetbussinessID出现了一些问题.....  "+u_time, err.Error())
 		log.Fatal(err)
 	}
-	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
-	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9,en-GB;q=0.8,en;q=0.7")
+	req.Header.Set("Accept", "*/*")
+	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
 	req.Header.Set("Cache-Control", "no-cache")
 	req.Header.Set("Connection", "keep-alive")
-	req.Header.Set("Cookie", getCookie())
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Cookie", cookie)
 	req.Header.Set("Pragma", "no-cache")
-	req.Header.Set("Upgrade-Insecure-Requests", "1")
+	req.Header.Set("Referer", "https://webvpn.xmu.edu.cn/http/77726476706e69737468656265737421f9fd46d23f256253300b86a1/app/229")
+	req.Header.Set("Sec-Fetch-Dest", "empty")
+	req.Header.Set("Sec-Fetch-Mode", "cors")
+	req.Header.Set("Sec-Fetch-Site", "same-origin")
+	req.Header.Set("X-Requested-With", "XMLHttpRequest")
+	req.Header.Set("sec-ch-ua", `" Not A;Brand";v="99", "Chromium";v="102", "Microsoft Edge";v="102"`)
+	req.Header.Set("sec-ch-ua-mobile", "?0")
+	req.Header.Set("sec-ch-ua-platform", `"Windows"`)
 	req.Header.Set("User-Agent", User_Agent)
 	resp, err := client.Do(req)
 	if err != nil {
-		send_email("GetbussinessID出现了一些问题.....  "+u_time, err.Error())
+		send_email("2GetbussinessID出现了一些问题.....  "+u_time, err.Error())
 		log.Fatal(err)
 	}
 	defer resp.Body.Close()
 	bodyText, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		send_email("GetbussinessID出现了一些问题.....  "+u_time, err.Error())
+		send_email("3GetbussinessID出现了一些问题.....  "+u_time, err.Error())
 		log.Fatal(err)
 	}
 	//fmt.Printf("%s\n", resp.StatusCode)
@@ -237,7 +245,7 @@ func getbussinessID() string {
 	var getb bid
 	err = json.Unmarshal(bodyText, &getb) //反序列化
 	if err != nil {
-		send_email("GetbussinessID出现了一些问题.....  "+u_time, err.Error())
+		send_email("4GetbussinessID出现了一些问题.....  "+u_time, err.Error())
 		log.Fatal(err)
 	}
 	bid := getb.Data[0].Business.ID
@@ -259,7 +267,7 @@ func getID() string {
 	req.Header.Set("Connection", "keep-alive")
 	req.Header.Set("Cache-Control", "no-cache")
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Cookie", getCookie())
+	req.Header.Set("Cookie", cookie)
 	req.Header.Set("If-None-Match", `W/"4138-V3qtR8Z1sFVcaru9at8wciTNIFM"`)
 	req.Header.Set("Referer", "https://webvpn.xmu.edu.cn/http/77726476706e69737468656265737421f9fd46d23f256253300b86a1/app/229")
 	req.Header.Set("User-Agent", User_Agent)
@@ -355,16 +363,15 @@ func pause() {
 }
 
 func main() {
-	fmt.Println("Automatic temperature registration by Haynes v1.3.1")
+	cookie = getCookie()
+	fmt.Println("Automatic temperature registration by Haynes v1.5")
 	t := time.Now() //当前时间
 	timeLayoutStr := "2006-01-02 15:04:05"
 	u_time = t.Format(timeLayoutStr)
 	id := getID()
 	client := &http.Client{}
-	//	var data = strings.NewReader(getformdata())
+	var data = strings.NewReader(getformdata())
 	url := "https://webvpn.xmu.edu.cn/http/77726476706e69737468656265737421f9fd46d23f256253300b86a1/api/formEngine/formInstance/" + id + "?vpn-12-o1-ijg.xujc.com"
-	//https://webvpn.xmu.edu.cn/http/77726476706e69737468656265737421f9fd46d23f256253300b86a1/api/formEngine/formInstance/629a9f8ed4b01b00063a1af1?vpn-12-o1-ijg.xujc.com
-	//https://webvpn.xmu.edu.cn/http/77726476706e69737468656265737421f9fd46d23f256253300b86a1/api/formEngine/formInstance/629b8102d4b01b00063a676f?vpn-12-o1-ijg.xujc.com
 	println("url:", url)
 	req, err := http.NewRequest("POST", url, data)
 	if err != nil {
@@ -375,7 +382,7 @@ func main() {
 	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9,en-GB;q=0. 8,en;q=0.7")
 	req.Header.Set("Connection", "keep-alive")
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Cookie", getCookie())
+	req.Header.Set("Cookie", cookie)
 	req.Header.Set("User-Agent", User_Agent)
 	req.Header.Set("X-Requested-With", "XMLHttpRequest")
 	req.Header.Set("Origin", "https://webvpn.xmu.edu.cn")
