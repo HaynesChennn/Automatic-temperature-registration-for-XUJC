@@ -16,7 +16,7 @@ import (
 
 var User_Agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36"
 
-var u_name, u_no, u_time,bussid string
+var u_name, u_no, u_time, bussid string
 
 type Xujc struct {
 	Data struct {
@@ -261,7 +261,7 @@ func getMailAdress() string {
 
 func getID() string {
 	client := &http.Client{}
-	bussid=getbussinessID()
+	bussid = getbussinessID()
 	fmt.Println("businessID:", bussid)
 	url := "http://ijg.xujc.com/api/formEngine/business/" + getbussinessID() + "/myFormInstance"
 	req, err := http.NewRequest("GET", url, nil)
@@ -338,6 +338,20 @@ func isChange() bool {
 	//fmt.Printf("%s\n", bodyText)
 }
 
+func setbody(url string, st string, t string, is string) string {
+	mbody := "<!DOCTYPE html>\n<html lang=\"en\" dir=\"ltr\">\n<head>\n<meta charset=\"utf-8\">\n<title></title>\n<style>\n* {\n\tmargin: 0;\n\tpadding: 0;\n\tbox-sizing: border-box;\n\tfont-family: \"Open Sans\", sans-serif;\n}\nbody {\n\tbackground: #786fa6;\n\theight: 100vh;\n\tdisplay: flex;\n\talign-items: center;\n\tjustify-content: center;\n}\n.newsletter {\n\tbackground: linear-gradient(125deg, #778beb, #f8a5c2);\n\tpadding: 70px;\n\ttext-align: center;\n\tbox-shadow: 0 0 20px #00000060;\n}\n.newsletter h1 {\n\ttext-transform: uppercase;\n\tcolor: #fff;\n\tfont-size: 30px;\n\tline-height: 40px;\n}\n.newsletter h1 span {\n\tdisplay: block;\n\tfont-size: 38px;\n}\n.newsletter p {\n\tcolor: #fff;\n\tfont-size: 14px;\n\tmargin: 10px 0;\n}\n.txtb {\n\twidth: 100%;\n\theight: 70px;\n\tbackground: #f1f1f199;\n\tborder-radius: 40px;\n\tposition: relative;\n\tmargin-top: 40px;\n}\n.txtb input {\n\twidth: 100%;\n\theight: 70px;\n\tborder-radius: 40px;\n\tborder: 0;\n\tbackground: none;\n\tpadding: 0 30px;\n\toutline: none;\n\tfont-size: 15px;\n\tpadding-right: 80px;\n}\n.txtb button {\n\tbackground: #574b90;\n\tborder: 0;\n\twidth: 50px;\n\theight: 50px;\n\tborder-radius: 50%;\n\tposition: absolute;\n\tright: 10px;\n\ttop: 10px;\n\toutline: none;\n\tcursor: pointer;\n\tcolor: #fff;\n\ttransition: 0.3s linear;\n}\n.txtb button:hover {\n\topacity: .5;\n}\n.s {\n\tcolor:#0084FF;\n\tfont-size: 15px;\n}\n</style>\n<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.css\">\n</head>\n<body>\n<div class=\"newsletter\">\n  <h1> Temperature Sign In</h1><br>\n  \n " +
+		" <span class=\"s\">" + "NO:" + u_no + "<br>" +
+		"Name:" + u_name + "<br>" +
+		"BusinessID:" + bussid + "<br>" +
+		"URL:" + url + "<br>" +
+		"State:" + st + "<br>" +
+		"isChange:" + is + "<br>" +
+		"UpdateTime:" + u_time +
+		"</span> <br>\n\t" +
+		"<p>Made with ❤ by HaynesChen.</p>\n\t</div>\n</body>\n</html>"
+	return mbody
+}
+
 func send_email(mailtitle string, mailbody string) {
 	//简单设置log参数
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
@@ -346,8 +360,8 @@ func send_email(mailtitle string, mailbody string) {
 	//设置sender发送方的邮箱，此处可以填写自己的邮箱
 	em.From = "ian-chen0713@qq.com"
 
-	mail:=getMailAdress()
-	if mail=="" {
+	mail := getMailAdress()
+	if mail == "" {
 		return
 	}
 
@@ -425,28 +439,18 @@ func main() {
 	} else {
 		st = "Fail"
 	}
-	mbody := "<h2>Temperature Sign In Details</h2>" +
-		"NO:" + u_no + "<br>" +
-		"Name:" + u_name + "<br>" +
-		"bussinessID:" + bussid+"<br>"+
-		"URL:" + url + "<br>" +
-		"State:" + st + "<br>" +
-		"isChange:"
-	if isChange() {
-		isch = "False"
-	} else {
-		isch = "True"
+	if !isChange() {
+		setbody(url, st, u_time, "True")
 		fmt.Println("!_! 表单数据改变了,快来看看")
-		send_email("!_! 表单数据改变了,快来看看", mbody)
+		send_email("!_! 表单数据改变了,快来看看", setbody(url, st, u_time, "True"))
 	}
 	fmt.Println("Status:", st)
 	fmt.Println("isChange:", isch)
 	fmt.Println("Time:", u_time)
-	mbody += isch + "<br>" + "UpdateTime:" + u_time
 	if xujc.State != true {
-		send_email("QAQ 体温打卡失败啦,快来检查一下  "+u_time, mbody)
+		send_email("QAQ 体温打卡失败啦,快来检查一下  "+u_time, setbody(url, st, u_time, "False"))
 	} else {
-		send_email("0.0 体温打卡成功!   "+u_time, mbody)
+		send_email("0.0 体温打卡成功!   "+u_time, setbody(url, st, u_time, "False"))
 	}
 	pause()
 }
