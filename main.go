@@ -14,10 +14,9 @@ import (
 	"time"
 )
 
-//var cookie = "_dx_uzZo5y=a389b56dee2bbc800696affa8164893f72a5651fc24098911bbaf3f2bd5ac83fc2f6370f; Hm_lvt_d4b4fe5895335a64dc71a1e3d97ecaae=1650788542,1650966832,1651718592; SAAS_S_ID=jgxy; JSESSIONID=93A8F358CC96D982F91AEE0B173324F5; _dx_app_5c7bafe274b534f13ec3b614135a362e=627a69fcopGU37T5P1TYiyGssFahg9ISpJaGmtL1; _dx_captcha_vid=0D84355393FB38CCB0E29E0771352C0AEA4F7D37B0B1AEDF8E848B01DBFEA1F615AF05286A5DD11B52A65E1DA4D628AAAE729001ABD62ABA2B21B6EADD17B3826036ADAD99C617C968DDB3C3FAC9D847; SAAS_U=1455cd5698302b35041285c57a960dfc995be15fd444a2a77d85911fa04055a9"
 var User_Agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36"
 
-var u_name, u_no, u_time string
+var u_name, u_no, u_time,bussid string
 
 type Xujc struct {
 	Data struct {
@@ -245,9 +244,25 @@ func getbussinessID() string {
 	return strconv.Itoa(bid)
 }
 
+func getMailAdress() string {
+	f, err := os.Open("mail.txt")
+	if err != nil {
+		log.Printf("mailadress open failed : %#v", err)
+		return ""
+	}
+	defer f.Close()
+	fd, err := ioutil.ReadAll(f)
+	if err != nil {
+		log.Printf("mailadress read failed :%#v", err)
+		return ""
+	}
+	return string(fd)
+}
+
 func getID() string {
 	client := &http.Client{}
-	fmt.Println("businessID:", getbussinessID())
+	bussid=getbussinessID()
+	fmt.Println("businessID:", bussid)
 	url := "http://ijg.xujc.com/api/formEngine/business/" + getbussinessID() + "/myFormInstance"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -331,14 +346,19 @@ func send_email(mailtitle string, mailbody string) {
 	//设置sender发送方的邮箱，此处可以填写自己的邮箱
 	em.From = "ian-chen0713@qq.com"
 
+	mail:=getMailAdress()
+	if mail=="" {
+		return
+	}
+
 	//设置receiver接收方的邮箱此处也可以填写自己的邮箱，就是自己发邮件给自己
-	em.To = []string{"hayneschen@163.com"}
+	em.To = []string{mail}
 
 	//设置主题
 	em.Subject = mailtitle
 
-	//简单设置文件发送的内容，暂时设置成纯文本
-	em.Text = []byte(mailbody)
+	//简单设置文件发送的内容
+	em.HTML = []byte(mailbody)
 
 	//设置服务器相关的配置
 	err := em.Send("smtp.qq.com:25", smtp.PlainAuth("", "ian-chen0713@qq.com", "cwgnwjtzwcjmbcbb", "smtp.qq.com"))
@@ -355,13 +375,12 @@ func pause() {
 }
 
 func main() {
-	fmt.Println("Automatic temperature registration by Haynes v1.3.1")
+	fmt.Println("Automatic temperature registration by Haynes v1.4")
 	t := time.Now() //当前时间
 	timeLayoutStr := "2006-01-02 15:04:05"
 	u_time = t.Format(timeLayoutStr)
 	id := getID()
 	client := &http.Client{}
-	//formdata := `{"formData":[{"name":"label_1582537738348","title":"文本","value":{},"hide":false,"readonly":true},{"name":"input_1582537793424","title":"学号","value":{"stringValue":"ROB21026"},"hide":false,"readonly":true},{"name":"input_1582537796856","title":"姓名","value":{"stringValue":"陈鸿壹"},"hide":false,"readonly":true},{"name":"input_1582537799026","title":"学院","value":{"stringValue":"信息科学与技术学院"},"hide":false,"readonly":true},{"name":"select_1582639884820","title":"性别","value":{"stringValue":"男"},"hide":false,"readonly":true},{"name":"input_1582639887112","title":"年级","value":{"stringValue":"2021"},"hide":false,"readonly":true},{"name":"input_1582639888256","title":"班级","value":{"stringValue":"计算机21(3)"},"hide":false,"readonly":true},{"name":"input_1582639889478","title":"辅导员","value":{"stringValue":"高新琪"},"hide":false,"readonly":true},{"name":"select_1631714040062","title":"完成情况","value":{"stringValue":"已打卡"},"hide":false,"readonly":false},{"name":"label_1582538217569","title":"文本","value":{},"hide":false,"readonly":true},{"name":"select_1582538214785","title":"当前所在的地理位置","value":{"stringValue":"校内"},"hide":false,"readonly":false},{"name":"input_1582538157713","title":"当前所在国家","value":{"stringValue":""},"hide":true,"readonly":false},{"name":"address_1582538163410","title":"当前所在的省市区","value":{"addressValue":{"province":"福建省","city":"漳州市","area":"龙海市","fullValue":"福建省漳州市龙海市"}},"hide":false,"readonly":false},{"name":"select_1648711313366","title":"目前是否居住在招商局漳州开发区","value":{"stringValue":"是"},"hide":false,"readonly":false},{"name":"label_1582537910151","title":"文本","value":{},"hide":false,"readonly":true},{"name":"select_1631790340241","title":"今日体温","value":{"stringValue":"37.3以下"},"hide":false,"readonly":false},{"name":"select_1640686551031","title":"是否已接种疫苗","value":{"stringValue":"已接种3针"},"hide":false,"readonly":false},{"name":"datetime_1640686554409","title":"最后一针疫苗接种日期","value":{"dateValue":"2022-02-27 00:00:00"},"hide":false,"readonly":false},{"name":"label_1644481853234","title":"文本","value":{},"hide":false,"readonly":true},{"name":"select_1641522783266","title":"今日是否有中高风险【所在城市】旅居史","value":{"stringValue":"否"},"hide":false,"readonly":false},{"name":"label_1641522839410","title":"中高风险地区查询","value":{},"hide":false,"readonly":true},{"name":"select_1641522890815","title":"今日是否有中高风险地区旅居史","value":{"stringValue":null},"hide":true,"readonly":false},{"name":"input_1641522901563","title":"中高风险地区旅居史详细地址","value":{"stringValue":null},"hide":true,"readonly":false},{"name":"select_1641523063583","title":"今日个人疫情管控情况","value":{"stringValue":"无"},"hide":false,"readonly":false},{"name":"select_1641523103608","title":"今日是否有境外旅居史","value":{"stringValue":"无"},"hide":false,"readonly":false},{"name":"select_1588863625331","title":"今日本人及共同居住人员是否与中高风险地区或境外回国人员接触？","value":{"stringValue":"否"},"hide":false,"readonly":false},{"name":"select_1582538846920","title":"今日是否出现发热、咳嗽、胸闷、呼吸困难等症状？","value":{"stringValue":"否"},"hide":false,"readonly":false},{"name":"select_1582538869774","title":"是否就诊或住院","value":{"stringValue":""},"hide":true,"readonly":false},{"name":"table_1588863652072","title":"与中高风险地区或境外回国人员接触情况登记（需点击左下角“+新增”）","value":{"tableValue":[]},"hide":true,"readonly":false},{"name":"label_1582538416593","title":"文本","value":{},"hide":false,"readonly":true},{"name":"input_1582538924486","title":"备注","value":{"stringValue":null},"hide":false,"readonly":false},{"name":"select_1582538939790","title":"本人是否承诺以上所填报的全部内容均属实、准确，不存在任何隐瞒和不实的情况，更无遗漏之处。","value":{"stringValue":"是"},"hide":false,"readonly":false}],"playerId":"owner"}`
 	var data = strings.NewReader(getformdata())
 	url := "http://ijg.xujc.com/api/formEngine/formInstance/" + id
 	//println("url:", url)
@@ -406,11 +425,12 @@ func main() {
 	} else {
 		st = "Fail"
 	}
-	mbody := "Temperature Sign In Details" + "\n" +
-		"URL:" + url + "\n" +
-		"NO:" + u_no + "\n" +
-		"Name:" + u_name + "\n" +
-		"State:" + st + "\n" +
+	mbody := "<h2>Temperature Sign In Details</h2>" +
+		"NO:" + u_no + "<br>" +
+		"Name:" + u_name + "<br>" +
+		"bussinessID:" + bussid+"<br>"+
+		"URL:" + url + "<br>" +
+		"State:" + st + "<br>" +
 		"isChange:"
 	if isChange() {
 		isch = "False"
@@ -422,7 +442,7 @@ func main() {
 	fmt.Println("Status:", st)
 	fmt.Println("isChange:", isch)
 	fmt.Println("Time:", u_time)
-	mbody += isch + "\n" + "UpdateTime:" + u_time
+	mbody += isch + "<br>" + "UpdateTime:" + u_time
 	if xujc.State != true {
 		send_email("QAQ 体温打卡失败啦,快来检查一下  "+u_time, mbody)
 	} else {
