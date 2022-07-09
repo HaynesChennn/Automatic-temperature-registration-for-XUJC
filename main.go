@@ -14,10 +14,9 @@ import (
 	"time"
 )
 
-//var cookie = "_dx_uzZo5y=a389b56dee2bbc800696affa8164893f72a5651fc24098911bbaf3f2bd5ac83fc2f6370f; Hm_lvt_d4b4fe5895335a64dc71a1e3d97ecaae=1650788542,1650966832,1651718592; SAAS_S_ID=jgxy; JSESSIONID=93A8F358CC96D982F91AEE0B173324F5; _dx_app_5c7bafe274b534f13ec3b614135a362e=627a69fcopGU37T5P1TYiyGssFahg9ISpJaGmtL1; _dx_captcha_vid=0D84355393FB38CCB0E29E0771352C0AEA4F7D37B0B1AEDF8E848B01DBFEA1F615AF05286A5DD11B52A65E1DA4D628AAAE729001ABD62ABA2B21B6EADD17B3826036ADAD99C617C968DDB3C3FAC9D847; SAAS_U=1455cd5698302b35041285c57a960dfc995be15fd444a2a77d85911fa04055a9"
 var User_Agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36"
 
-var u_name, u_no, u_time string
+var u_name, u_no, u_time,bussid string
 
 type Xujc struct {
 	Data struct {
@@ -245,9 +244,25 @@ func getbussinessID() string {
 	return strconv.Itoa(bid)
 }
 
+func getMailAdress() string {
+	f, err := os.Open("mail.txt")
+	if err != nil {
+		log.Printf("mailadress open failed : %#v", err)
+		return ""
+	}
+	defer f.Close()
+	fd, err := ioutil.ReadAll(f)
+	if err != nil {
+		log.Printf("mailadress read failed :%#v", err)
+		return ""
+	}
+	return string(fd)
+}
+
 func getID() string {
 	client := &http.Client{}
-	fmt.Println("businessID:", getbussinessID())
+	bussid=getbussinessID()
+	fmt.Println("businessID:", bussid)
 	url := "http://ijg.xujc.com/api/formEngine/business/" + getbussinessID() + "/myFormInstance"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -331,14 +346,19 @@ func send_email(mailtitle string, mailbody string) {
 	//设置sender发送方的邮箱，此处可以填写自己的邮箱
 	em.From = "ian-chen0713@qq.com"
 
+	mail:=getMailAdress()
+	if mail=="" {
+		return
+	}
+
 	//设置receiver接收方的邮箱此处也可以填写自己的邮箱，就是自己发邮件给自己
-	em.To = []string{"hayneschen@163.com"}
+	em.To = []string{mail}
 
 	//设置主题
 	em.Subject = mailtitle
 
-	//简单设置文件发送的内容，暂时设置成纯文本
-	em.Text = []byte(mailbody)
+	//简单设置文件发送的内容
+	em.HTML = []byte(mailbody)
 
 	//设置服务器相关的配置
 	err := em.Send("smtp.qq.com:25", smtp.PlainAuth("", "ian-chen0713@qq.com", "cwgnwjtzwcjmbcbb", "smtp.qq.com"))
@@ -355,13 +375,13 @@ func pause() {
 }
 
 func main() {
-	fmt.Println("Automatic temperature registration by Haynes v1.3.1")
+	fmt.Println("Automatic temperature registration by Haynes v1.4")
 	t := time.Now() //当前时间
 	timeLayoutStr := "2006-01-02 15:04:05"
 	u_time = t.Format(timeLayoutStr)
 	id := getID()
 	client := &http.Client{}
-	//	var data = strings.NewReader(getformdata())
+	var data = strings.NewReader(getformdata())
 	url := "http://ijg.xujc.com/api/formEngine/formInstance/" + id
 	//println("url:", url)
 	req, err := http.NewRequest("POST", url, data)
@@ -405,11 +425,12 @@ func main() {
 	} else {
 		st = "Fail"
 	}
-	mbody := "Temperature Sign In Details" + "\n" +
-		"URL:" + url + "\n" +
-		"NO:" + u_no + "\n" +
-		"Name:" + u_name + "\n" +
-		"State:" + st + "\n" +
+	mbody := "<h2>Temperature Sign In Details</h2>" +
+		"NO:" + u_no + "<br>" +
+		"Name:" + u_name + "<br>" +
+		"bussinessID:" + bussid+"<br>"+
+		"URL:" + url + "<br>" +
+		"State:" + st + "<br>" +
 		"isChange:"
 	if isChange() {
 		isch = "False"
@@ -421,7 +442,7 @@ func main() {
 	fmt.Println("Status:", st)
 	fmt.Println("isChange:", isch)
 	fmt.Println("Time:", u_time)
-	mbody += isch + "\n" + "UpdateTime:" + u_time
+	mbody += isch + "<br>" + "UpdateTime:" + u_time
 	if xujc.State != true {
 		send_email("QAQ 体温打卡失败啦,快来检查一下  "+u_time, mbody)
 	} else {
