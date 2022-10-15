@@ -400,9 +400,11 @@ func pause() {
 }
 
 func main() {
-	ver = "1.6.5"
+	timelocal := time.FixedZone("CST", 3600*8)
+	time.Local = timelocal
+	t := time.Now().Local() //当前时间
+	ver = "1.6.6"
 	fmt.Println("Automatic temperature registration by Haynes v" + ver)
-	t := time.Now() //当前时间
 	timeLayoutStr := "2006-01-02 15:04:05"
 	u_time = t.Format(timeLayoutStr)
 	id := getID()
